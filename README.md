@@ -17,5 +17,18 @@ SportSurBot - это телеграм-бот, который помогает ж
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/ваш_username/SportSurBot.git
-cd SportSurBot
+git clone https://github.com/Eralv1lle/Sport_bot.git
+```
+### 2. Установка зависимостей
+```bash
+pip install -r requirements.txt
+```
+### 3. Настройка бота
+
+1. Создайте бота через @BotFather в Telegram и получите API токен
+2. Создайте файл .env в корне проекта и добавьте токен:
+
+### 4. Запуск бота
+```bash
+python main.py
+```
