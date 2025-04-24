@@ -43,7 +43,7 @@ python main.py
 ├── musics.py - Модуль работы с музыкой
 ├── requirements.txt - Зависимости
 
-# Контакты
+### Контакты
 По вопросам сотрудничества или предложений:
 
 Email: vovaioskevich@mail.ru
