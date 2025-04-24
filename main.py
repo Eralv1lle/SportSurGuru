@@ -1,69 +1,44 @@
-import telebot
 import pickle
 from time import sleep
 
 from AI import *
 from information import *
+from markups import *
+from musics import *
 
 
-API = '7584710593:AAHz-j_wQPtoYKpnwztoknFuZTom4jVqF_A'
+API = '7357163001:AAHkUgngo9k2hmhK21IM4-X3qujAw2HFqpk'
 bot = telebot.TeleBot(API)
 print('Запустился')
 
 dict_users = pickle.load(open('dict_users.txt', 'rb'))
 
-
 def save_dict():
     pickle.dump(dict_users, open('dict_users.txt', 'wb'))
 
-
-markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-profile_btn = telebot.types.KeyboardButton(text='Мой профиль👤')
-ai_btn = telebot.types.KeyboardButton(text='Задать вопрос спорт-нейросети🤖')
-imt_btn = telebot.types.KeyboardButton(text='Мой ИМТ💪')
-sport_btn = telebot.types.KeyboardButton(text='Спорт в Сургуте🏙️')
-my_sport = telebot.types.KeyboardButton(text='Подобрать мне спорт🔎')
-markup.add(profile_btn, imt_btn)
-markup.add(sport_btn, my_sport)
-markup.add(ai_btn)
-
-information_markup = telebot.types.InlineKeyboardMarkup()
-age_btn = telebot.types.InlineKeyboardButton(text='Изменить возраст', callback_data='age')
-gender_btn = telebot.types.InlineKeyboardButton(text='Указать пол', callback_data='gender')
-height_btn = telebot.types.InlineKeyboardButton(text='Изменить рост', callback_data='height')
-weight_btn = telebot.types.InlineKeyboardButton(text='Изменить вес', callback_data='weight')
-goal_btn = telebot.types.InlineKeyboardButton(text='Поставить цель', callback_data='goal')
-information_markup.add(age_btn, gender_btn)
-information_markup.add(height_btn, weight_btn)
-information_markup.add(goal_btn)
-
-gender_markup = telebot.types.InlineKeyboardMarkup()
-male = telebot.types.InlineKeyboardButton(text='Мужской👨', callback_data='male')
-female = telebot.types.InlineKeyboardButton(text='Женский👩🏻', callback_data='female')
-gender_markup.add(male, female)
-
-pluses_markup = telebot.types.InlineKeyboardMarkup()
-btn = telebot.types.InlineKeyboardButton(text='Каковы плюсы хорошего телосложения?', callback_data='pluses')
-pluses_markup.add(btn)
-
-change_info_markup = telebot.types.InlineKeyboardMarkup()
-change_info_markup_btn = telebot.types.InlineKeyboardButton(text='Изменить данные📋', callback_data='info')
-change_info_markup.add(change_info_markup_btn)
-
-category_markup = telebot.types.InlineKeyboardMarkup()
-game = telebot.types.InlineKeyboardButton(text='Игровые виды спорта', callback_data='game')
-martial = telebot.types.InlineKeyboardButton(text='Боевые искусства', callback_data='martial')
-athletics = telebot.types.InlineKeyboardButton(text='Лёгкая атлетика', callback_data='athletics')
-season = telebot.types.InlineKeyboardButton(text='Сезонные виды спорта', callback_data='season')
-heavy = telebot.types.InlineKeyboardButton(text='Тяжёлые виды спорта', callback_data='heavy')
-category_markup.add(game)
-category_markup.add(athletics)
-category_markup.add(martial)
-category_markup.add(season)
-category_markup.add(heavy)
-
 list_with_buttons = ['/start', 'Мой профиль👤', 'Задать вопрос спорт-нейросети🤖',
-                     'Мой ИМТ💪', 'Спорт в Сургуте🏙️', 'Подобрать мне спорт🔎']
+                     'Мой ИМТ💪', 'Спорт в Сургуте🏙️', 'Подобрать мне спорт🔎', 'Музыка для тренировок♫', 'Интересные факты о видах спорта🤔']
+
+def edit_info(message):
+    bot.edit_message_text(chat_id=message.chat.id, message_id=
+    dict_users[message.from_user.first_name]['last_info'].message_id, text=send_profile(
+        dict_users[message.from_user.first_name]['name'],
+        dict_users[message.from_user.first_name]['age'],
+        dict_users[message.from_user.first_name]['gender'],
+        dict_users[message.from_user.first_name]['height'],
+        dict_users[message.from_user.first_name]['weight'],
+        dict_users[message.from_user.first_name]['goal']), parse_mode='markdown', reply_markup=change_info_markup)
+
+def edit_info_callback(callback):
+    bot.edit_message_text(chat_id=callback.message.chat.id, message_id=
+    dict_users[callback.from_user.first_name]['last_info'].message_id, text=send_profile(
+        dict_users[callback.from_user.first_name]['name'],
+        dict_users[callback.from_user.first_name]['age'],
+        dict_users[callback.from_user.first_name]['gender'],
+        dict_users[callback.from_user.first_name]['height'],
+        dict_users[callback.from_user.first_name]['weight'],
+        dict_users[callback.from_user.first_name]['goal']), parse_mode='markdown', reply_markup=change_info_markup)
+
 
 @bot.message_handler(commands=['start'], content_types=['text'])
 def start_message(message):
@@ -75,11 +50,14 @@ def start_message(message):
         dict_users[message.from_user.first_name]['height'] = '(не указано)'
         dict_users[message.from_user.first_name]['weight'] = '(не указано)'
         dict_users[message.from_user.first_name]['goal'] = '(не указано)'
+        dict_users[message.from_user.first_name]['last_message'] = message
+        dict_users[message.from_user.first_name]['last_info'] = message.message_id
+        save_dict()
         bot.send_message(message.chat.id, introduction_message1, reply_markup=pluses_markup)
-        sleep(.5)
-        bot.send_message(message.chat.id, '🚀 Давай начнем! Выбирай что тебя интересует на панели снизу и погнали!', reply_markup=markup)
+        sleep(0.5)
+        bot.send_message(message.chat.id, '🚀 Давай начнем! Выбирай что тебя интересует на панели снизу и погнали!', reply_markup=setup_markup())
     else:
-        bot.send_message(message.chat.id, hello_message, reply_markup=markup)
+        bot.send_message(message.chat.id, hello_message, reply_markup=setup_markup())
 
     bot.register_next_step_handler(message, check_message)
 
@@ -87,30 +65,58 @@ def start_message(message):
 def check_message(message):
     if message.text == '/start':
         start_message(message)
+
     elif message.text == 'Мой профиль👤':
-        bot.send_message(message.chat.id, send_profile(dict_users[message.from_user.first_name]['name'],
+        dict_users[message.from_user.first_name]['last_info'] = bot.send_message(message.chat.id, send_profile(dict_users[message.from_user.first_name]['name'],
                                                        dict_users[message.from_user.first_name]['age'],
                                                        dict_users[message.from_user.first_name]['gender'],
                                                        dict_users[message.from_user.first_name]['height'],
                                                        dict_users[message.from_user.first_name]['weight'],
                                                        dict_users[message.from_user.first_name]['goal']), parse_mode='markdown', reply_markup=change_info_markup)
-
+        bot.send_message(message.chat.id, 'Режим работы бота с помощью кнопок клавиатуры ниже ↘️', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
+
     elif message.text == 'Задать вопрос спорт-нейросети🤖':
         bot.send_chat_action(message.chat.id, 'typing')
-        bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, 'Придумай какое-нибудь небольшое приветствие с именем'))
+        bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, 'Придумай какое-нибудь небольшое приветствие с именем'), reply_markup=setup_markup())
         bot.register_next_step_handler(message, message_ai)
-    elif message.text == 'Проверить мой ИМТ':
+
+    elif message.text == 'Мой ИМТ💪':
         if dict_users[message.from_user.first_name]['height'] != '(не указано)' and dict_users[message.from_user.first_name]['weight'] != '(не указано)':
-            IMT = int(dict_users[message.from_user.first_name]['weight']) / (int(dict_users[message.from_user.first_name]['height']) / 100) ** 2
-            answer = check_IMT(IMT).lower()
-            bot.send_message(message.chat.id, f'Ваш ИМТ равен: *{round(IMT, 2)}*\n\nДанное значение ИМТ соответствует: *{answer}*\n\nА также сейчас ваш ИМТ оценит наш эксперт', parse_mode='markdown')
-            bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, f'Оцени индекс массы тела и дай рекомендации: имт={IMT}'))
+            bmi = int(dict_users[message.from_user.first_name]['weight']) / (int(dict_users[message.from_user.first_name]['height']) / 100) ** 2
+            answer = check_bmi(dict_users[message.from_user.first_name]['gender'], int(dict_users[message.from_user.first_name]['age']), int(dict_users[message.from_user.first_name]['height']), int(dict_users[message.from_user.first_name]['weight']))
+            bot.send_message(message.chat.id, answer, parse_mode='markdown')
+            bot.send_chat_action(message.chat.id, 'typing')
+            bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, f'Оцени индекс массы тела и дай рекомендации: имт={bmi}, мой пол: {dict_users[message.from_user.first_name]['gender']}, мой возраст {dict_users[message.from_user.first_name]['age']}'), reply_markup=setup_markup())
         else:
-            bot.send_message(message.chat.id, f'Для вычисление ИМТ пожалуйста, заполните данные в профиле')
+            bot.send_message(message.chat.id, f'Для вычисление ИМТ пожалуйста, заполните данные в профиле', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
+
     elif message.text == 'Спорт в Сургуте🏙️':
         bot.send_message(message.chat.id, 'Какая категория спорта вас интересует?', reply_markup=category_markup)
+        bot.send_message(message.chat.id, 'Режим работы бота с помощью кнопок клавиатуры ниже ↘️', reply_markup=setup_markup())
+        bot.register_next_step_handler(message, check_message)
+
+    elif message.text == 'Подобрать мне спорт🔎':
+        mes = bot.send_message(message.chat.id, 'Перебираю всё исходя из ваших данных...')
+        bot.send_chat_action(message.chat.id, 'typing')
+        answer = ask_ai(message.from_user.first_name, f'Я тебе даю данные о пользователе и весь список секций спорта в Сургуте. Возраст пользователя: {dict_users[message.from_user.first_name]['age']}, вес: {dict_users[message.from_user.first_name]['weight']} кг, рост: {dict_users[message.from_user.first_name]['height']} см, пол: {dict_users[message.from_user.first_name]['gender']}. Исходя из эти данных подбери секции которые подходят этому человек из этого списка: {sport_in_surgut}. Если не будет ничего то либо чуть-чуть соври, либо выбери наиболее подходящее. Пиши просто название секции и почему она подходит, в конце добавь что в разделе "Спорт в Сургуте" вы можете записаться на тренировки и узнать подробную информацию. Пиши без приветствий, а просто типо: давай разберём всё что для тебя подходит')
+        bot.delete_message(message.chat.id, mes.message_id)
+        bot.send_message(message.chat.id, answer, reply_markup=setup_markup())
+        bot.register_next_step_handler(message, check_message)
+
+    elif message.text == 'Музыка для тренировок♫':
+        bot.send_message(message.chat.id, 'Выберите жанр:', reply_markup=music_markup)
+        bot.register_next_step_handler(message, check_message)
+
+    elif message.text == 'Интересные факты о видах спорта🤔':
+        bot.send_message(message.chat.id, 'Выберите вид спорты, о котором вы хотели бы узнать:', reply_markup=facts_markup)
+        bot.register_next_step_handler(message, check_message)
+
+    else:
+        bot.send_message(message.chat.id, 'Извини, я не могу тебя понять, пожалуйста, выбери элемент из панели снизу', reply_markup=setup_markup())
+        bot.register_next_step_handler(message, check_message)
+
 
 def message_ai(message):
     if message.text in list_with_buttons:
@@ -118,50 +124,176 @@ def message_ai(message):
     else:
         mes = bot.send_message(message.chat.id, 'Усердно думаю над ответом...📝')
         bot.send_chat_action(message.chat.id, 'typing')
-        answer = ask_ai(message.from_user.first_name, message.text)
+        answer = ask_ai(message.from_user.first_name, message.text + f" мой возраст: {dict_users[message.from_user.first_name]['age']}, мой вес: {dict_users[message.from_user.first_name]['weight']} кг, мой рост: {dict_users[message.from_user.first_name]['height']} см, мой пол: {dict_users[message.from_user.first_name]['gender']}")
         bot.delete_message(message.chat.id, mes.message_id)
         bot.send_message(message.chat.id, answer)
         bot.register_next_step_handler(message, message_ai)
 
 
+@bot.message_handler(content_types=['text'])
+def check_messages(message):
+    if message.text in list_with_buttons:
+        check_message(message)
+
 @bot.callback_query_handler(func=lambda callback: True)
 def check_call_data(callback):
-    if callback.data == 'age':
-        bot.send_message(callback.message.chat.id, 'Введите ваш возраст:')
-        bot.register_next_step_handler(callback.message, check_age)
-    if callback.data == 'gender':
-        bot.send_message(callback.message.chat.id, 'Укажите ваш пол:', reply_markup=gender_markup)
-    if callback.data == 'height':
-        bot.send_message(callback.message.chat.id, 'Введите ваш рост:')
-        bot.register_next_step_handler(callback.message, check_height)
-    if callback.data == 'weight':
-        bot.send_message(callback.message.chat.id, 'Введите ваш вес:')
-        bot.register_next_step_handler(callback.message, check_weight)
-    if callback.data == 'goal':
-        bot.send_message(callback.message.chat.id, 'Какая у вас цель?')
-        bot.register_next_step_handler(callback.message, check_goal)
-
-    if callback.data == 'male':
-        dict_users[callback.from_user.first_name]['gender'] = 'Мужской👨'
-        bot.send_message(callback.message.chat.id, 'Данные обновлены')
-    if callback.data == 'female':
-        dict_users[callback.from_user.first_name]['gender'] = 'Женский👩🏻'
-        bot.send_message(callback.message.chat.id, 'Данные обновлены')
-
-    if callback.data == 'pluses':
-        bot.send_message(callback.message.chat.id, introduction_message2, reply_markup=markup)
-
+    # Сообщение с изменением информации
     if callback.data == 'info':
         bot.send_message(callback.message.chat.id, 'Выберите, что хотите изменить:', reply_markup=information_markup)
+        bot.clear_step_handler_by_chat_id(chat_id=callback.message.chat.id)
+
+    # Изменение информации о пользователе
+    if callback.data == 'age':
+        dict_users[callback.from_user.first_name]['last_message'] = bot.send_message(callback.message.chat.id, 'Введите ваш возраст:')
+        bot.clear_step_handler_by_chat_id(chat_id=callback.message.chat.id)
+        bot.register_next_step_handler(callback.message, check_age)
+    elif callback.data == 'gender':
+        dict_users[callback.from_user.first_name]['last_message'] = bot.send_message(callback.message.chat.id, 'Укажите ваш пол:', reply_markup=gender_markup)
+    elif callback.data == 'height':
+        dict_users[callback.from_user.first_name]['last_message'] = bot.send_message(callback.message.chat.id, 'Введите ваш рост:')
+        bot.clear_step_handler_by_chat_id(chat_id=callback.message.chat.id)
+        bot.register_next_step_handler(callback.message, check_height)
+    elif callback.data == 'weight':
+        dict_users[callback.from_user.first_name]['last_message'] = bot.send_message(callback.message.chat.id, 'Введите ваш вес:')
+        bot.clear_step_handler_by_chat_id(chat_id=callback.message.chat.id)
+        bot.register_next_step_handler(callback.message, check_weight)
+    elif callback.data == 'goal':
+        dict_users[callback.from_user.first_name]['last_message'] = bot.send_message(callback.message.chat.id, 'Какая у вас цель?')
+        bot.clear_step_handler_by_chat_id(chat_id=callback.message.chat.id)
+        bot.register_next_step_handler(callback.message, check_goal)
+
+    # Выбор пола
+    if callback.data == 'male':
+        dict_users[callback.from_user.first_name]['gender'] = 'Мужской👨'
+        sleep(0.5)
+        bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        edit_info_callback(callback)
+        print('asd')
+        save_dict()
+    if callback.data == 'female':
+        dict_users[callback.from_user.first_name]['gender'] = 'Женский👩🏻'
+        sleep(0.5)
+        bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        edit_info_callback(callback)
+        save_dict()
+
+    # Сообщение с плюсами здорового тела
+    if callback.data == 'pluses':
+        bot.send_message(callback.message.chat.id, introduction_message2, reply_markup=setup_markup())
+
+    # Выбор категории спорта
+    if callback.data == 'game':
+        bot.send_message(callback.message.chat.id, 'Выберите тип спорта:', reply_markup=game_markup)
+    elif callback.data == 'athletics':
+        bot.send_message(callback.message.chat.id, 'Выберите тип спорта:', reply_markup=athletics_markup)
+    elif callback.data == 'martial':
+        bot.send_message(callback.message.chat.id, 'Выберите тип спорта:', reply_markup=martial_markup)
+    elif callback.data == 'season':
+        bot.send_message(callback.message.chat.id, 'Выберите тип спорта:', reply_markup=season_markup)
+    elif callback.data == 'heavy':
+        bot.send_message(callback.message.chat.id, 'Выберите тип спорта:', reply_markup=heavy_markup)
+
+    # Отправка сообщений из категории игровые
+    if callback.data == 'football':
+        bot.send_message(callback.message.chat.id, football_sport, parse_mode='markdown')
+    elif callback.data == 'basketball':
+        pass
+    elif callback.data == 'volleyball':
+        pass
+    elif callback.data == 'tennis':
+        pass
+    elif callback.data == 'ice_hockey':
+        pass
+
+    # Отправка сообщений из категории атлетика
+    if callback.data == 'run':
+        pass
+    elif callback.data == 'yoga':
+        pass
+    elif callback.data == 'gymnastics':
+        pass
+    elif callback.data == 'dances':
+        pass
+
+    # Отправка сообщений из категории боевые
+    if callback.data == 'taekwondo':
+        pass
+    elif callback.data == 'karate':
+        pass
+    elif callback.data == 'boxing':
+        pass
+
+    # Отправка сообщений из категории сезонные
+    if callback.data == 'ski':
+        pass
+    elif callback.data == 'snowboard':
+        pass
+    elif callback.data == 'bycycle':
+        pass
+
+    # Отправка сообщений из категории тяжёлая атлетика
+    if callback.data == 'powerlifting':
+        pass
+    elif callback.data == 'heavy_athletics':
+        pass
+    elif callback.data == 'rocking_chair':
+        pass
+
+    # Выбор музыки
+    if callback.data == 'popular':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
+        bot.send_message(callback.message.chat.id, 'Вот топ-10 треков из жанра "Популярная музыка для тренировок"', reply_markup=popular_playlist)
+        for music in send_popular_music():
+            bot.send_audio(callback.message.chat.id, music)
+    elif callback.data == 'crossfit':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
+        bot.send_message(callback.message.chat.id, 'Вот топ-10 треков из жанра "Crossfit"', reply_markup=crossfit_playlist)
+        for music in send_crossfit_music():
+            bot.send_audio(callback.message.chat.id, music)
+    elif callback.data == 'yoga_music':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
+        bot.send_message(callback.message.chat.id, 'Вот топ-10 треков из жанра "Йога (спокойная)"', reply_markup=yoga_music_playlist)
+        for music in send_yoga_music():
+            bot.send_audio(callback.message.chat.id, music)
+    elif callback.data == 'for_gym':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
+        bot.send_message(callback.message.chat.id, 'Вот топ-10 треков из жанра "Плейлист для спортзала"', reply_markup=for_gym_playlist)
+        for music in send_gym_music():
+            bot.send_audio(callback.message.chat.id, music)
+
+    # Выбор фактов
+    if callback.data == 'football_fact':
+        bot.send_message(callback.message.chat.id, fact_about_football)
+    elif callback.data == 'basketball_fact':
+        bot.send_message(callback.message.chat.id, fact_about_basketball)
+    elif callback.data == 'volleyball_fact':
+        bot.send_message(callback.message.chat.id, fact_about_volleyball)
+    elif callback.data == 'tennis_fact':
+        bot.send_message(callback.message.chat.id, fact_about_tennis)
+    elif callback.data == 'ice_hockey_fact':
+        bot.send_message(callback.message.chat.id, fact_about_hockey)
+    elif callback.data == 'taekwondo_fact':
+        bot.send_message(callback.message.chat.id, fact_about_taekwondo)
+    elif callback.data == 'karate_fact':
+        bot.send_message(callback.message.chat.id, fact_about_karate)
+    elif callback.data == 'ski_fact':
+        bot.send_message(callback.message.chat.id, fact_about_ski)
+    elif callback.data == 'snowboard_fact':
+        bot.send_message(callback.message.chat.id, fact_about_snowboard)
 
 def check_age(message):
     if message.text in list_with_buttons:
         check_message(message)
         return
+
     if message.text and message.text.isdigit():
         if 1 <= int(message.text) <= 125:
             dict_users[message.from_user.first_name]['age'] = message.text
-            bot.send_message(message.chat.id, 'Данные обновлены')
+            sleep(0.5)
+            bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
+            bot.delete_message(message.chat.id, message.message_id)
+            edit_info(message)
+            save_dict()
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий возраст, это важно т. к. мы будем присылать вам рекомендации')
@@ -170,15 +302,19 @@ def check_age(message):
         bot.send_message(message.chat.id, 'Пожалуйста, введите числом')
         bot.register_next_step_handler(message, check_age)
 
-
 def check_height(message):
     if message.text in list_with_buttons:
         check_message(message)
         return
+
     if message.text and message.text.isdigit():
         if 1 <= int(message.text) <= 220:
             dict_users[message.from_user.first_name]['height'] = message.text
-            bot.send_message(message.chat.id, 'Данные обновлены')
+            sleep(0.5)
+            bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
+            bot.delete_message(message.chat.id, message.message_id)
+            edit_info(message)
+            save_dict()
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий рост, это важно т. к. мы будем присылать вам рекомендации')
@@ -187,15 +323,19 @@ def check_height(message):
         bot.send_message(message.chat.id, 'Пожалуйста, введите числом')
         bot.register_next_step_handler(message, check_height)
 
-
 def check_weight(message):
     if message.text in list_with_buttons:
         check_message(message)
         return
+
     if message.text and message.text.isdigit():
         if 5 <= int(message.text) <= 350:
             dict_users[message.from_user.first_name]['weight'] = message.text
-            bot.send_message(message.chat.id, 'Данные обновлены')
+            sleep(0.5)
+            bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
+            bot.delete_message(message.chat.id, message.message_id)
+            edit_info(message)
+            save_dict()
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий вес, это важно т. к. мы будем присылать вам рекомендации')
@@ -204,18 +344,27 @@ def check_weight(message):
         bot.send_message(message.chat.id, 'Пожалуйста, введите числом')
         bot.register_next_step_handler(message, check_weight)
 
-
 def check_goal(message):
     if message.text in list_with_buttons:
         check_message(message)
         return
+
     if message.text:
+        sleep(0.5)
+        bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
+        bot.delete_message(message.chat.id, message.message_id)
+        mes = bot.send_message(message.chat.id, 'Оцениваю вашу цель...📝')
+        bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, f'Оцени мою цель: {message.text}'))
+        bot.delete_message(message.chat.id, mes.message_id)
+        edit_info(message)
         dict_users[message.from_user.first_name]['goal'] = message.text
-        bot.send_message(message.chat.id, 'Данные обновлены')
+        save_dict()
         bot.register_next_step_handler(message, check_message)
     else:
         bot.send_message(message.chat.id, 'Пожалуйста, введите цель')
         bot.register_next_step_handler(message, check_goal)
 
-bot.infinity_polling()
+
+if __name__ == '__main__':
+    bot.infinity_polling()
