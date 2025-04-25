@@ -7,8 +7,10 @@ from markups import *
 from musics import *
 
 
-API = '7357163001:AAHkUgngo9k2hmhK21IM4-X3qujAw2HFqpk'
-bot = telebot.TeleBot(API)
+dotenv.load_dotenv('.env')
+
+TOKEN = os.getenv("BOT_TOKEN")
+bot = telebot.TeleBot(TOKEN)
 print('Запустился')
 
 dict_users = pickle.load(open('dict_users.txt', 'rb'))
@@ -16,8 +18,8 @@ dict_users = pickle.load(open('dict_users.txt', 'rb'))
 def save_dict():
     pickle.dump(dict_users, open('dict_users.txt', 'wb'))
 
-list_with_buttons = ['/start', 'Мой профиль👤', 'Задать вопрос спорт-нейросети🤖',
-                     'Мой ИМТ💪', 'Спорт в Сургуте🏙️', 'Подобрать мне спорт🔎', 'Музыка для тренировок♫', 'Интересные факты о видах спорта🤔']
+list_with_buttons = ['/start', 'Мой профиль 👤', 'Задать вопрос спорт-нейросети 🤖', 'Мой ИМТ 💪', 'Спорт в Сургуте 🏙️',
+                     'Подобрать мне спорт 🔎', 'Музыка для тренировок ♫', 'Интересные факты о видах спорта 🤔', 'Мои достижения 🏆']
 
 def edit_info(message):
     bot.edit_message_text(chat_id=message.chat.id, message_id=
@@ -52,6 +54,7 @@ def start_message(message):
         dict_users[message.from_user.first_name]['goal'] = '(не указано)'
         dict_users[message.from_user.first_name]['last_message'] = message
         dict_users[message.from_user.first_name]['last_info'] = message.message_id
+        dict_users[message.from_user.first_name]['achievements'] = []
         save_dict()
         bot.send_message(message.chat.id, introduction_message1, reply_markup=pluses_markup)
         sleep(0.5)
@@ -66,7 +69,7 @@ def check_message(message):
     if message.text == '/start':
         start_message(message)
 
-    elif message.text == 'Мой профиль👤':
+    elif message.text == 'Мой профиль 👤':
         dict_users[message.from_user.first_name]['last_info'] = bot.send_message(message.chat.id, send_profile(dict_users[message.from_user.first_name]['name'],
                                                        dict_users[message.from_user.first_name]['age'],
                                                        dict_users[message.from_user.first_name]['gender'],
@@ -76,12 +79,12 @@ def check_message(message):
         bot.send_message(message.chat.id, 'Режим работы бота с помощью кнопок клавиатуры ниже ↘️', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
 
-    elif message.text == 'Задать вопрос спорт-нейросети🤖':
+    elif message.text == 'Задать вопрос спорт-нейросети 🤖':
         bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, 'Придумай какое-нибудь небольшое приветствие с именем'), reply_markup=setup_markup())
         bot.register_next_step_handler(message, message_ai)
 
-    elif message.text == 'Мой ИМТ💪':
+    elif message.text == 'Мой ИМТ 💪':
         if dict_users[message.from_user.first_name]['height'] != '(не указано)' and dict_users[message.from_user.first_name]['weight'] != '(не указано)':
             bmi = int(dict_users[message.from_user.first_name]['weight']) / (int(dict_users[message.from_user.first_name]['height']) / 100) ** 2
             answer = check_bmi(dict_users[message.from_user.first_name]['gender'], int(dict_users[message.from_user.first_name]['age']), int(dict_users[message.from_user.first_name]['height']), int(dict_users[message.from_user.first_name]['weight']))
@@ -92,31 +95,51 @@ def check_message(message):
             bot.send_message(message.chat.id, f'Для вычисление ИМТ пожалуйста, заполните данные в профиле', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
 
-    elif message.text == 'Спорт в Сургуте🏙️':
+    elif message.text == 'Спорт в Сургуте 🏙️':
         bot.send_message(message.chat.id, 'Какая категория спорта вас интересует?', reply_markup=category_markup)
         bot.send_message(message.chat.id, 'Режим работы бота с помощью кнопок клавиатуры ниже ↘️', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
 
-    elif message.text == 'Подобрать мне спорт🔎':
-        mes = bot.send_message(message.chat.id, 'Перебираю всё исходя из ваших данных...')
-        bot.send_chat_action(message.chat.id, 'typing')
-        answer = ask_ai(message.from_user.first_name, f'Я тебе даю данные о пользователе и весь список секций спорта в Сургуте. Возраст пользователя: {dict_users[message.from_user.first_name]['age']}, вес: {dict_users[message.from_user.first_name]['weight']} кг, рост: {dict_users[message.from_user.first_name]['height']} см, пол: {dict_users[message.from_user.first_name]['gender']}. Исходя из эти данных подбери секции которые подходят этому человек из этого списка: {sport_in_surgut}. Если не будет ничего то либо чуть-чуть соври, либо выбери наиболее подходящее. Пиши просто название секции и почему она подходит, в конце добавь что в разделе "Спорт в Сургуте" вы можете записаться на тренировки и узнать подробную информацию. Пиши без приветствий, а просто типо: давай разберём всё что для тебя подходит')
-        bot.delete_message(message.chat.id, mes.message_id)
-        bot.send_message(message.chat.id, answer, reply_markup=setup_markup())
-        bot.register_next_step_handler(message, check_message)
+    elif message.text == 'Подобрать мне спорт 🔎':
+        if dict_users[message.from_user.first_name]['height'] == '(не указано)' or \
+            dict_users[message.from_user.first_name]['weight'] == '(не указано)' or \
+            dict_users[message.from_user.first_name]['gender'] == '(не указано)' or \
+            dict_users[message.from_user.first_name]['age'] == '(не указано)':
+            bot.send_message(message.chat.id, 'Для подбор спорта, пожалуйста, заполните данные в профиле')
+        else:
+            mes = bot.send_message(message.chat.id, 'Перебираю всё исходя из ваших данных...')
+            bot.send_chat_action(message.chat.id, 'typing')
+            answer = ask_ai(message.from_user.first_name, f'Я тебе даю данные о пользователе и весь список секций спорта в Сургуте. Возраст пользователя: {dict_users[message.from_user.first_name]['age']}, вес: {dict_users[message.from_user.first_name]['weight']} кг, рост: {dict_users[message.from_user.first_name]['height']} см, пол: {dict_users[message.from_user.first_name]['gender']}. Исходя из эти данных подбери секции которые подходят этому человек из этого списка: {sport_in_surgut}. Если не будет ничего то либо чуть-чуть соври, либо выбери наиболее подходящее. Пиши просто название секции и почему она подходит, в конце добавь что в разделе "Спорт в Сургуте" вы можете записаться на тренировки и узнать подробную информацию. Пиши без приветствий, а просто типо: давай разберём всё что для тебя подходит. ПИШИ БЕЗ ФОРМАТИРОВАНИЕ ТЕКСТА ПРОСТО ОБЫЧНЫЙ ТЕКСТ')
+            bot.delete_message(message.chat.id, mes.message_id)
+            bot.send_message(message.chat.id, answer, reply_markup=setup_markup())
+            bot.register_next_step_handler(message, check_message)
 
-    elif message.text == 'Музыка для тренировок♫':
+    elif message.text == 'Музыка для тренировок ♫':
         bot.send_message(message.chat.id, 'Выберите жанр:', reply_markup=music_markup)
         bot.register_next_step_handler(message, check_message)
 
-    elif message.text == 'Интересные факты о видах спорта🤔':
-        bot.send_message(message.chat.id, 'Выберите вид спорты, о котором вы хотели бы узнать:', reply_markup=facts_markup)
+    elif message.text == 'Интересные факты о видах спорта 🤔':
+        bot.send_message(message.chat.id, 'Выберите вид спорта, о котором вы хотели бы узнать:', reply_markup=facts_markup)
         bot.register_next_step_handler(message, check_message)
+
+    elif message.text == 'Мои достижения 🏆':
+        bot.send_message(message.chat.id, 'Введите достижение, которого вы достигли:', reply_markup=achievement_markup)
+        bot.register_next_step_handler(message, check_achievement)
 
     else:
         bot.send_message(message.chat.id, 'Извини, я не могу тебя понять, пожалуйста, выбери элемент из панели снизу', reply_markup=setup_markup())
         bot.register_next_step_handler(message, check_message)
 
+def check_achievement(message):
+    if message.text in list_with_buttons:
+        check_message(message)
+        return
+    dict_users[message.from_user.first_name]['achievements'].append(message.text)
+    bot.send_message(message.chat.id, 'Достижение добавлено✅, а сейчас его оценит наш эксперт')
+    save_dict()
+    bot.send_chat_action(message.chat.id, 'typing')
+    bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, f'Оцени достижение и дай рекомендации, моё достижение: {message.text}, мой возраст: {dict_users[message.from_user.first_name]['age']}, мой вес: {dict_users[message.from_user.first_name]['weight']} кг, мой рост: {dict_users[message.from_user.first_name]['height']} см, мой пол: {dict_users[message.from_user.first_name]['gender']}'))
+    bot.register_next_step_handler(message, check_message)
 
 def message_ai(message):
     if message.text in list_with_buttons:
@@ -165,17 +188,16 @@ def check_call_data(callback):
     # Выбор пола
     if callback.data == 'male':
         dict_users[callback.from_user.first_name]['gender'] = 'Мужской👨'
-        sleep(0.5)
         bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         edit_info_callback(callback)
-        print('asd')
         save_dict()
+        bot.send_message(callback.message.chat.id, 'Данные сохранены✅')
     if callback.data == 'female':
         dict_users[callback.from_user.first_name]['gender'] = 'Женский👩🏻'
-        sleep(0.5)
         bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
         edit_info_callback(callback)
         save_dict()
+        bot.send_message(callback.message.chat.id, 'Данные сохранены✅')
 
     # Сообщение с плюсами здорового тела
     if callback.data == 'pluses':
@@ -195,49 +217,51 @@ def check_call_data(callback):
 
     # Отправка сообщений из категории игровые
     if callback.data == 'football':
-        bot.send_message(callback.message.chat.id, football_sport, parse_mode='markdown')
+        bot.send_message(callback.message.chat.id, football_info, parse_mode='markdown')
     elif callback.data == 'basketball':
-        pass
+        bot.send_message(callback.message.chat.id, basketball_info, parse_mode='markdown')
     elif callback.data == 'volleyball':
-        pass
+        bot.send_message(callback.message.chat.id, volleyball_info, parse_mode='markdown')
     elif callback.data == 'tennis':
-        pass
+        bot.send_message(callback.message.chat.id, tennis_info, parse_mode='markdown')
     elif callback.data == 'ice_hockey':
-        pass
+        bot.send_message(callback.message.chat.id, hockey_info, parse_mode='markdown')
 
     # Отправка сообщений из категории атлетика
     if callback.data == 'run':
-        pass
+        bot.send_message(callback.message.chat.id, running_info, parse_mode='markdown')
     elif callback.data == 'yoga':
-        pass
+        bot.send_message(callback.message.chat.id, yoga_info, parse_mode='markdown')
     elif callback.data == 'gymnastics':
-        pass
+        bot.send_message(callback.message.chat.id, gymnastics_info, parse_mode='markdown')
     elif callback.data == 'dances':
-        pass
+        bot.send_message(callback.message.chat.id, dance_info, parse_mode='markdown')
 
     # Отправка сообщений из категории боевые
     if callback.data == 'taekwondo':
-        pass
+        bot.send_message(callback.message.chat.id, taekwondo_info, parse_mode='markdown')
     elif callback.data == 'karate':
-        pass
+        bot.send_message(callback.message.chat.id, karate_info, parse_mode='markdown')
+    elif callback.data == 'judo':
+        bot.send_message(callback.message.chat.id, judo_info, parse_mode='markdown')
     elif callback.data == 'boxing':
-        pass
+        bot.send_message(callback.message.chat.id, muay_thai_info, parse_mode='markdown')
 
     # Отправка сообщений из категории сезонные
     if callback.data == 'ski':
-        pass
+        bot.send_message(callback.message.chat.id, ski_info, parse_mode='markdown')
     elif callback.data == 'snowboard':
-        pass
+        bot.send_message(callback.message.chat.id, snowboard_info, parse_mode='markdown')
     elif callback.data == 'bycycle':
-        pass
+        bot.send_message(callback.message.chat.id, cycling_info, parse_mode='markdown')
 
     # Отправка сообщений из категории тяжёлая атлетика
     if callback.data == 'powerlifting':
-        pass
+        bot.send_message(callback.message.chat.id, powerlifting_info, parse_mode='markdown')
     elif callback.data == 'heavy_athletics':
         pass
     elif callback.data == 'rocking_chair':
-        pass
+        bot.send_message(callback.message.chat.id, fitness_clubs_info, parse_mode='markdown')
 
     # Выбор музыки
     if callback.data == 'popular':
@@ -263,23 +287,29 @@ def check_call_data(callback):
 
     # Выбор фактов
     if callback.data == 'football_fact':
-        bot.send_message(callback.message.chat.id, fact_about_football)
+        bot.send_message(callback.message.chat.id, football_facts, parse_mode='markdown')
     elif callback.data == 'basketball_fact':
-        bot.send_message(callback.message.chat.id, fact_about_basketball)
+        bot.send_message(callback.message.chat.id, basketball_facts, parse_mode='markdown')
     elif callback.data == 'volleyball_fact':
-        bot.send_message(callback.message.chat.id, fact_about_volleyball)
+        bot.send_message(callback.message.chat.id, volleyball_facts, parse_mode='markdown')
     elif callback.data == 'tennis_fact':
-        bot.send_message(callback.message.chat.id, fact_about_tennis)
+        bot.send_message(callback.message.chat.id, tennis_facts, parse_mode='markdown')
     elif callback.data == 'ice_hockey_fact':
-        bot.send_message(callback.message.chat.id, fact_about_hockey)
+        bot.send_message(callback.message.chat.id, hockey_facts, parse_mode='markdown')
     elif callback.data == 'taekwondo_fact':
-        bot.send_message(callback.message.chat.id, fact_about_taekwondo)
+        bot.send_message(callback.message.chat.id, taekwondo_facts, parse_mode='markdown')
     elif callback.data == 'karate_fact':
-        bot.send_message(callback.message.chat.id, fact_about_karate)
+        bot.send_message(callback.message.chat.id, karate_facts, parse_mode='markdown')
     elif callback.data == 'ski_fact':
-        bot.send_message(callback.message.chat.id, fact_about_ski)
+        bot.send_message(callback.message.chat.id, ski_facts, parse_mode='markdown')
     elif callback.data == 'snowboard_fact':
-        bot.send_message(callback.message.chat.id, fact_about_snowboard)
+        bot.send_message(callback.message.chat.id, snowboard_facts, parse_mode='markdown')
+
+    if callback.data == 'achievement':
+        achievement_message = 'МОИ ДОСТИЖЕНИЯ 🏆\n\n'
+        for i, achievement in enumerate(dict_users[callback.from_user.first_name]['achievements']):
+            achievement_message += str(i + 1) + '. ' + achievement + '\n'
+        bot.send_message(callback.message.chat.id, achievement_message)
 
 def check_age(message):
     if message.text in list_with_buttons:
@@ -289,11 +319,11 @@ def check_age(message):
     if message.text and message.text.isdigit():
         if 1 <= int(message.text) <= 125:
             dict_users[message.from_user.first_name]['age'] = message.text
-            sleep(0.5)
             bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
             bot.delete_message(message.chat.id, message.message_id)
             edit_info(message)
             save_dict()
+            bot.send_message(message.chat.id, 'Данные сохранены✅')
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий возраст, это важно т. к. мы будем присылать вам рекомендации')
@@ -308,13 +338,13 @@ def check_height(message):
         return
 
     if message.text and message.text.isdigit():
-        if 1 <= int(message.text) <= 220:
+        if 20 <= int(message.text) <= 220:
             dict_users[message.from_user.first_name]['height'] = message.text
-            sleep(0.5)
             bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
             bot.delete_message(message.chat.id, message.message_id)
             edit_info(message)
             save_dict()
+            bot.send_message(message.chat.id, 'Данные сохранены✅')
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий рост, это важно т. к. мы будем присылать вам рекомендации')
@@ -331,11 +361,11 @@ def check_weight(message):
     if message.text and message.text.isdigit():
         if 5 <= int(message.text) <= 350:
             dict_users[message.from_user.first_name]['weight'] = message.text
-            sleep(0.5)
             bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
             bot.delete_message(message.chat.id, message.message_id)
             edit_info(message)
             save_dict()
+            bot.send_message(message.chat.id, 'Данные сохранены✅')
             bot.register_next_step_handler(message, check_message)
         else:
             bot.send_message(message.chat.id, 'Пожалуйста, введите свой настоящий вес, это важно т. к. мы будем присылать вам рекомендации')
@@ -350,7 +380,6 @@ def check_goal(message):
         return
 
     if message.text:
-        sleep(0.5)
         bot.delete_message(message.chat.id, dict_users[message.from_user.first_name]['last_message'].message_id)
         bot.delete_message(message.chat.id, message.message_id)
         mes = bot.send_message(message.chat.id, 'Оцениваю вашу цель...📝')
@@ -360,6 +389,7 @@ def check_goal(message):
         edit_info(message)
         dict_users[message.from_user.first_name]['goal'] = message.text
         save_dict()
+        bot.send_message(message.chat.id, 'Данные сохранены✅')
         bot.register_next_step_handler(message, check_message)
     else:
         bot.send_message(message.chat.id, 'Пожалуйста, введите цель')

@@ -1,6 +1,10 @@
 from mistralai import Mistral
+import dotenv
+import os
 
-API = 'a9ESyvUewfdZI8LNNoMbhqJD203odcOF'
+dotenv.load_dotenv('.env')
+
+API = os.getenv("AI_API")
 model = "mistral-large-latest"
 
 client = Mistral(api_key=API)

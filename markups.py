@@ -3,27 +3,29 @@ import telebot
 # Клавиатура снизу
 def setup_markup():
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    profile_btn = telebot.types.KeyboardButton(text='Мой профиль👤')
-    ai_btn = telebot.types.KeyboardButton(text='Задать вопрос спорт-нейросети🤖')
-    imt_btn = telebot.types.KeyboardButton(text='Мой ИМТ💪')
-    sport_btn = telebot.types.KeyboardButton(text='Спорт в Сургуте🏙️')
-    my_sport = telebot.types.KeyboardButton(text='Подобрать мне спорт🔎')
-    music = telebot.types.KeyboardButton(text='Музыка для тренировок♫')
-    facts = telebot.types.KeyboardButton(text='Интересные факты о видах спорта🤔')
+    profile_btn = telebot.types.KeyboardButton(text='Мой профиль 👤')
+    ai_btn = telebot.types.KeyboardButton(text='Задать вопрос спорт-нейросети 🤖')
+    imt_btn = telebot.types.KeyboardButton(text='Мой ИМТ 💪')
+    sport_btn = telebot.types.KeyboardButton(text='Спорт в Сургуте 🏙️')
+    my_sport = telebot.types.KeyboardButton(text='Подобрать мне спорт 🔎')
+    music = telebot.types.KeyboardButton(text='Музыка для тренировок ♫')
+    facts = telebot.types.KeyboardButton(text='Интересные факты о видах спорта 🤔')
+    my_achievements = telebot.types.KeyboardButton(text='Мои достижения 🏆')
     markup.add(profile_btn, imt_btn)
     markup.add(sport_btn, my_sport)
     markup.add(facts, music)
+    markup.add(my_achievements)
     markup.add(ai_btn)
     return markup
 
 
 # Кнопки, для изменения информации для человека
 information_markup = telebot.types.InlineKeyboardMarkup()
-age_btn = telebot.types.InlineKeyboardButton(text='Изменить возраст', callback_data='age')
-gender_btn = telebot.types.InlineKeyboardButton(text='Указать пол', callback_data='gender')
-height_btn = telebot.types.InlineKeyboardButton(text='Изменить рост', callback_data='height')
-weight_btn = telebot.types.InlineKeyboardButton(text='Изменить вес', callback_data='weight')
-goal_btn = telebot.types.InlineKeyboardButton(text='Поставить цель', callback_data='goal')
+age_btn = telebot.types.InlineKeyboardButton(text='Изменить возраст 🎂', callback_data='age')
+gender_btn = telebot.types.InlineKeyboardButton(text='Указать пол 🚻', callback_data='gender')
+height_btn = telebot.types.InlineKeyboardButton(text='Изменить рост 📏', callback_data='height')
+weight_btn = telebot.types.InlineKeyboardButton(text='Изменить вес ⚖', callback_data='weight')
+goal_btn = telebot.types.InlineKeyboardButton(text='Поставить цель 🎯', callback_data='goal')
 information_markup.add(age_btn, gender_btn)
 information_markup.add(height_btn, weight_btn)
 information_markup.add(goal_btn)
@@ -76,12 +78,14 @@ game_markup.add(ice_hockey)
 
 # Кнопки с типами спортов для категории атлетика
 athletics_markup = telebot.types.InlineKeyboardMarkup()
-run_walk = telebot.types.InlineKeyboardButton(text='Бег и ходьба', callback_data='run')
+run_walk = telebot.types.InlineKeyboardButton(text='Бег и ходьба 🏃', callback_data='run')
 yoga = telebot.types.InlineKeyboardButton(text='Йога 🧘‍♂️', callback_data='yoga')
 gymnastics = telebot.types.InlineKeyboardButton(text='Гимнастика и акробатика 🤸‍♀️', callback_data='gymnastics')
 dances = telebot.types.InlineKeyboardButton(text='Танцы 💃', callback_data='dances')
-athletics_markup.add(run_walk, yoga)
-athletics_markup.add(gymnastics, dances)
+athletics_markup.add(run_walk)
+athletics_markup.add(yoga)
+athletics_markup.add(gymnastics)
+athletics_markup.add(dances)
 
 
 # Кнопки с типами спортов для категории боевые
@@ -89,8 +93,11 @@ martial_markup = telebot.types.InlineKeyboardMarkup()
 taekwondo = telebot.types.InlineKeyboardButton(text='Тхэквондо 👊', callback_data='taekwondo')
 karate = telebot.types.InlineKeyboardButton(text='Карате Киокусинкай 🥋', callback_data='karate')
 boxing = telebot.types.InlineKeyboardButton(text='Тайский бокс 🥊', callback_data='boxing')
-martial_markup.add(taekwondo, karate)
+judo = telebot.types.InlineKeyboardButton(text='Дзюдо 👘', callback_data='judo')
+martial_markup.add(taekwondo)
+martial_markup.add(karate)
 martial_markup.add(boxing)
+martial_markup.add(judo)
 
 
 # Кнопки с типами спортов для категории сезонные
@@ -98,7 +105,7 @@ season_markup = telebot.types.InlineKeyboardMarkup()
 ski = telebot.types.InlineKeyboardButton(text='Лыжи ⛷️', callback_data='ski')
 snowboard = telebot.types.InlineKeyboardButton(text='Сноуборд 🏂', callback_data='snowboard')
 bycycle = telebot.types.InlineKeyboardButton(text='Велоспорт 🚲', callback_data='bycycle')
-season_markup.add(ice_hockey, snowboard)
+season_markup.add(ski, snowboard)
 season_markup.add(bycycle)
 
 
@@ -107,7 +114,8 @@ heavy_markup = telebot.types.InlineKeyboardMarkup()
 powerlifting = telebot.types.InlineKeyboardButton(text='Пауэрлифтинг 💪️', callback_data='powerlifting')
 rocking_chair = telebot.types.InlineKeyboardButton(text='Фитнес-залы', callback_data='rocking_chair')
 heavy_athletics = telebot.types.InlineKeyboardButton(text='Тяжёлая атлетика 🏋️‍♂️', callback_data='heavy_athletics')
-heavy_markup.add(powerlifting, heavy_athletics)
+heavy_markup.add(powerlifting)
+heavy_markup.add(heavy_athletics)
 heavy_markup.add( rocking_chair)
 
 
@@ -118,7 +126,8 @@ crossfit = telebot.types.InlineKeyboardButton(text='CrossFit', callback_data='cr
 yoga_music = telebot.types.InlineKeyboardButton(text='Йога (спокойная)', callback_data='yoga_music')
 for_gym = telebot.types.InlineKeyboardButton(text='Плейлист для спортзала', callback_data='for_gym')
 music_markup.add(popular)
-music_markup.add(crossfit, yoga_music)
+music_markup.add(crossfit)
+music_markup.add(yoga_music)
 music_markup.add(for_gym)
 
 
@@ -149,3 +158,7 @@ ski_fact = telebot.types.InlineKeyboardButton(text='Лыжи ⛷️', callback_d
 snowboard_fact = telebot.types.InlineKeyboardButton(text='Сноуборд 🏂', callback_data='snowboard_fact')
 for fact in [football_fact, basketball_fact, volleyball_fact, tennis_fact, ice_hockey_fact, taekwondo_fact, karate_fact, ski_fact, snowboard_fact]:
     facts_markup.add(fact)
+
+achievement_markup = telebot.types.InlineKeyboardMarkup()
+achievement_btn = telebot.types.InlineKeyboardButton(text='Мои достижения 🏅', callback_data='achievement')
+achievement_markup.add(achievement_btn)
