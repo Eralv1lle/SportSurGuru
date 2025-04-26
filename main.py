@@ -385,9 +385,10 @@ def check_goal(message):
         mes = bot.send_message(message.chat.id, 'Оцениваю вашу цель...📝')
         bot.send_chat_action(message.chat.id, 'typing')
         bot.send_message(message.chat.id, ask_ai(message.from_user.first_name, f'Оцени мою цель: {message.text}'))
-        bot.delete_message(message.chat.id, mes.message_id)
-        edit_info(message)
+        bot.delete_message(mes.chat.id, mes.message_id)
         dict_users[message.from_user.first_name]['goal'] = message.text
+        edit_info(message)
+
         save_dict()
         bot.send_message(message.chat.id, 'Данные сохранены✅')
         bot.register_next_step_handler(message, check_message)
