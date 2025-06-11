@@ -50,4 +50,4 @@ python main.py
 
 Email: vovaioskevich@mail.ru
 
-Telegram: @Eralv1lle
+Telegram: @pitonovichh
